@@ -14,5 +14,8 @@ COPY target/shopping-cart*.jar /usr/app/
 # Set the working directory to /usr/app
 WORKDIR /usr/app
 
-# Run the application using a non-root user
-CMD ["java", "-jar", "shopping-cart*.jar"]
+# Rename the JAR to a fixed name so CMD can reference it
+RUN mv /usr/app/shopping-cart*.jar /usr/app/shopping-cart.jar
+
+# Run the application
+CMD ["java", "-jar", "shopping-cart.jar"]

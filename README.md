@@ -389,26 +389,26 @@ echo "✅ Public Route Table: $PUB_RT_ID"
 
 # Security Group for Jenkins Server
 SG_ID_1=$(aws ec2 create-security-group \
-  --group-name bastion-sg \
+  --group-name jenkins-sg \
   --description "Jenkins Server" \
   --vpc-id $VPC_ID \
   --query 'GroupId' \
   --output text)
 
 aws ec2 authorize-security-group-ingress \
-  --group-id $SG_ID \
+  --group-id $SG_ID_1 \
   --protocol tcp \
   --port 22 \
   --cidr 0.0.0.0/0
 
 aws ec2 authorize-security-group-ingress \
-  --group-id $SG_ID \
+  --group-id $SG_ID_1 \
   --protocol tcp \
   --port 8080 \
   --cidr 0.0.0.0/0
   
  aws ec2 authorize-security-group-ingress \
-  --group-id $SG_ID \
+  --group-id $SG_ID_1 \
   --protocol tcp \
   --port 80 \
   --cidr 0.0.0.0/0
@@ -416,26 +416,26 @@ echo "✅ Security Group Created: $SG_ID_1"
 
 # Security Group for Nexus Server
 SG_ID_2=$(aws ec2 create-security-group \
-  --group-name bastion-sg \
+  --group-name nexus-sg \
   --description "Nexus Server" \
   --vpc-id $VPC_ID \
   --query 'GroupId' \
   --output text)
 
 aws ec2 authorize-security-group-ingress \
-  --group-id $SG_ID \
+  --group-id $SG_ID_2 \
   --protocol tcp \
   --port 22 \
   --cidr 0.0.0.0/0
 
 aws ec2 authorize-security-group-ingress \
-  --group-id $SG_ID \
+  --group-id $SG_ID_2 \
   --protocol tcp \
   --port 8081 \
   --cidr 0.0.0.0/0
   
  aws ec2 authorize-security-group-ingress \
-  --group-id $SG_ID \
+  --group-id $SG_ID_2 \
   --protocol tcp \
   --port 80 \
   --cidr 0.0.0.0/0
@@ -443,26 +443,26 @@ echo "✅ Security Group Created: $SG_ID_1"
 
 # Security Group for SonarQube Server
 SG_ID_3=$(aws ec2 create-security-group \
-  --group-name bastion-sg \
+  --group-name sonarqube-sg \
   --description "SonarQube Server" \
   --vpc-id $VPC_ID \
   --query 'GroupId' \
   --output text)
 
 aws ec2 authorize-security-group-ingress \
-  --group-id $SG_ID \
+  --group-id $SG_ID_3 \
   --protocol tcp \
   --port 22 \
   --cidr 0.0.0.0/0
 
 aws ec2 authorize-security-group-ingress \
-  --group-id $SG_ID \
+  --group-id $SG_ID_3 \
   --protocol tcp \
   --port 9000 \
   --cidr 0.0.0.0/0
   
  aws ec2 authorize-security-group-ingress \
-  --group-id $SG_ID \
+  --group-id $SG_ID_3 \
   --protocol tcp \
   --port 80 \
   --cidr 0.0.0.0/0
@@ -513,7 +513,7 @@ $JENKINS_ID = (aws ec2 run-instances `
   --region us-east-1 `
   --output text)
 
-Write-Host "✅ Bastion Host Instance ID: $JENKINS_ID"
+Write-Host " Jenkins Server Instance ID: $JENKINS_ID"
 
 # Launch EC2 Instance for Nexus Server
 $NEXUS_ID = (aws ec2 run-instances `
@@ -529,7 +529,7 @@ $NEXUS_ID = (aws ec2 run-instances `
   --region us-east-1 `
   --output text)
 
-Write-Host "✅ Bastion Host Instance ID: $NEXUS_ID"  
+Write-Host " Nexus Server Instance ID: $NEXUS_ID"
 
 # Launch EC2 Instance for SonarQube Server
 $SONARQUBE_ID = (aws ec2 run-instances `
@@ -545,7 +545,7 @@ $SONARQUBE_ID = (aws ec2 run-instances `
   --region us-east-1 `
   --output text)
 
-Write-Host "✅ Bastion Host Instance ID: $SONARQUBE_ID"
+Write-Host " SonarQube Server Instance ID: $SONARQUBE_ID"
 ```
 
 ### 🐧 Linux / 🧠 macOS
@@ -579,7 +579,7 @@ JENKINS_ID=$(aws ec2 run-instances \
   --region us-east-1 \
   --output text)
 
-echo "✅ Jenkins Server Instance ID: $JENKINS_ID"
+Write-Host " Jenkins Server Instance ID: $JENKINS_ID"
 
 # Launch EC2 Instance for Nexus Server
 NEXUS_ID=$(aws ec2 run-instances \
@@ -595,7 +595,7 @@ NEXUS_ID=$(aws ec2 run-instances \
   --region us-east-1 \
   --output text)
 
-echo "✅ Nexus Server Instance ID: $NEXUS_ID"
+Write-Host " Nexus Server Instance ID: $NEXUS_ID"
 
 # Launch EC2 Instance for SonarQube Server
 SONARQUBE_ID=$(aws ec2 run-instances \
@@ -611,7 +611,7 @@ SONARQUBE_ID=$(aws ec2 run-instances \
   --region us-east-1 \
   --output text)
 
-echo "✅ SonarQube Server Instance ID: $SONARQUBE_ID"
+Write-Host " SonarQube Server Instance ID: $SONARQUBE_ID"
 ```
 
 ---
@@ -644,7 +644,7 @@ $KEY_NAME = "Jenkins-key"
 # Change directory to where the PEM file is stored
 cd "C:\path\to\your\pem\file"
 
-# Connect to the Bastion Host
+# Connect to the Jenkins Server
 ssh -i "$KEY_NAME.pem" ubuntu@$JENKINS_IP
 ```
 ---
@@ -662,8 +662,8 @@ cd ~/Downloads   # or the directory where you saved the PEM file
 # Ensure proper permissions
 chmod 400 ${KEY_NAME}.pem
 
-# Connect to the Bastion Host
-ssh -i ${KEY_NAME}.pem ubuntu@${BASTION_IP}
+# Connect to the Jenkins Server
+ssh -i ${KEY_NAME}.pem ubuntu@${JENKINS_IP}
 ```
 ---
 ## ⚙️ Prerequisites
@@ -1048,6 +1048,7 @@ docker rm -f sonar sonar-db
 ```
 
 ## ☸️ Create an EKS Cluster
+
 ### Creating AWS EKS Cluster using eksctl
 *Before creating a server login to the Jenkins server where the tools are installed*
 ```bash
@@ -1131,12 +1132,33 @@ addons:
 addonsConfig:    
    autoApplyPodIdentityAssociations: true
 ```
-## 🧭 Create Namespace
+### 🧱 Save your cluster config file
+```bash
+eks-cluster-config.yaml
+```
+
+### 🧾 Validate your config
+```bash
+eksctl utils validate cluster --config-file eks-cluster-config.yaml --region us-east-1
+```
+
+### 🚀 Create the cluster
+```bash
+eksctl create cluster -f eks-cluster-config.yaml
+```
+
+### 🧩 Verify the cluster
+```bash
+aws eks --region us-east-1 update-kubeconfig --name jenkins-secureapp
+kubectl get nodes
+kubectl get pods -A
+```
+
+###🧭 Create Namespace
 
 ```bash
 kubectl create namespace secureapp
 kubectl config set-context --current --namespace=secureapp
-kubectl get nodes
 ```
 
 ## ☸️ Create the ECR Repository

@@ -79,19 +79,6 @@ pipeline {
                 }
             }
         }
-        
-        stage('OWASP Dependency Check') {
-        			steps {
-        				script {
-        					echo '🔐 Running OWASP Dependency Check without S3...'
-        					dependencyCheck additionalArguments: """--scan . --format XML --out dependency-check-report --nvdApiKey $NVD_API_KEY --data /var/jenkins/.dependency-check-data/${env.BUILD_NUMBER}""",
-        						odcInstallation: 'DC'
-        
-        					archiveArtifacts artifacts: '**/dependency-check-report/*', allowEmptyArchive: true
-        					dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
-        				}
-        			}
-        		}
                 stage('Build Source Code') {
                     steps {
                         echo '⚙️ Packaging Source Code...'
@@ -194,10 +181,21 @@ stage('K8S Deploy') {
                     withCredentials([string(credentialsId: 'github-ssh-token', variable: 'GITHUB_TOKEN')]) { // Replace with the ID of the GitHub token credentials
                         sh 'git config user.email "sudhan@ci-cd.org"'
                         sh 'git config user.name "sudhancicd"'
-                        sh "git remote set-url origin https://$GITHUB_TOKEN:x-oauth-basic@github.com/sudhancicd/secure-shop-devsecops.git" // Replace with the URL of your Git repository
+						
+						// Replace with the URL of your Git repository
+                        sh "git remote set-url origin https://$GITHUB_TOKEN:x-oauth-basic@github.com/sudhancicd/secure-shop-devsecops.git" 
+						
+						//Clean workspace before rebase
+						sh 'git reset --hard'
+						sh 'git clean -fd'
+						sh 'git fetch origin main'
+                        sh 'git pull --rebase origin main'
                         sh 'git add .'
-                        sh 'git commit -m "ci: version bump"'
+                        sh 'git commit -m "ci: version bump [skip ci]" || echo "No changes to commit"'
                         sh 'git push origin HEAD:main'
+						sh 'git config user.email "sudhan@ci-cd.org"'
+
+
                     }
                 }
             }
